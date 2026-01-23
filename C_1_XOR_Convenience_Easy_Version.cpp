@@ -11,19 +11,12 @@ void solve() {
         cout<<' '<<n<<" 1\n";
         return;
     }
-    if(__builtin_popcount(n)==1){
-        cout<<"-1\n"; return;
+    cout<<n;
+    for(int i=2; i<=n-2; i+=2){
+        cout<<' '<<i+1<<' '<<i;
     }
-    int val = 2;
-    for(; ; val+=val){
-        if(n&val) break; 
-    }
-    cout<<val+1;
-    for(int i=2; i<=n-4; i+=2){
-        if(i!=val) cout<<' '<<i+1<<' '<<i;
-        else       cout<<' '<<n<<' '<<i;
-    }
-    cout<<' '<<n-1<<" 1 "<<n-2<<endl;
+    cout<<" 1\n";
+    return;
 }
 
 int main() {
