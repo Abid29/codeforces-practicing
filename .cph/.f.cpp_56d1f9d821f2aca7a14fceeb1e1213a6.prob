@@ -1,1 +1,0 @@
-{"name":"Local: f","url":"c:\\Users\\User\\All projects\\codeforces-practicing\\f.cpp","tests":[{"id":1769436098495,"input":"3\n1 8\n28 138\n460001 470000","output":"36\n495\n7"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"c:\\Users\\User\\All projects\\codeforces-practicing\\f.cpp","group":"local","local":true}
