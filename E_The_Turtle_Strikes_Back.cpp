@@ -43,7 +43,7 @@ void solve() {
     }
 
     long long ans = suf[1][1];
-    for(int i=1,j=1; i<n||j<m; ){
+    for(int i=1,j=1; i<=n&&j<=m; ){
         if(mat[i][j]>0){
             long long val = suf[1][1]-mat[i][j]-mat[i][j];
             if(i>1 && j<m) val = max(val, cmx[i-1][j+1]);
@@ -72,6 +72,8 @@ void solve() {
 }
 
 int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
     int t; cin >> t; while(t--) {
         solve();
     }
