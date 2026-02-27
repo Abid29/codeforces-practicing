@@ -1,7 +1,13 @@
 #include <bits/stdc++.h>
+#include<ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
+using namespace __gnu_pbds;
+typedef tree<int, null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> indexed_set;
+
 const int md = 998244353;
-long long a[200005],ans[200005];
+long long a[200005],sorteda[200005],seg[800005];
+unordered_map<long long,int>ord;
 long long bigpow(long long a, long long b){
     long long ret = 1;
     while(b){
@@ -10,70 +16,81 @@ long long bigpow(long long a, long long b){
     }
     return ret;
 }
-void solve() {
-    int n; cin>>n;
-    vector<long long>vec(n);
-    long long sum=0;
-    for(int i=1; i<=n; i++){
-        cin>>a[i];
-        vec[i-1] = a[i];
-        sum += a[i];
-    }
-    sort(vec.begin(),vec.end());
 
-    long long presum=vec[0], sufsum=sum-vec[0]-vec[1],val=vec[1]; 
-    set<long long>pst, sst;
-    pst.insert(vec[0]);
-    for(int i=2; i<n; i++) sst.insert(vec[i]);
-
-    for(long long int id=n; id>3; id--){
-        long long mx = max(*pst.rbegin()*(pst.size()) - presum, sufsum - *sst.begin()*(sst.size()));
-        while(pst.size()>1 && mx > max(*next(pst.rbegin())*(pst.size()-1)-(presum-*pst.rbegin()), sufsum - val*sst.size())){
-            sst.insert(val), sufsum += val;
-            val = *pst.rbegin();
-            pst.erase(prev(pst.end()));
-            presum -= val;
-            mx = max(*pst.rbegin()*(pst.size()) - presum, sufsum - *sst.begin()*(sst.size()));
-        }
-
-        while(sst.size()>1 && mx > max(sufsum-*sst.begin()-(*next(sst.begin())*(sst.size()-1)), val*pst.size()-presum)){
-            pst.insert(val), presum += val;
-            val = *sst.begin(), sufsum-=val;
-            sst.erase(sst.begin());
-            mx = max(*pst.rbegin()*(pst.size()) - presum, sufsum - *sst.begin()*(sst.size()));
-        } 
-
-        ans[id] = mx %md * bigpow(id-2, md-2) %md;
-
-        if(a[id] > val){
-            sufsum -= a[id], sst.erase(sst.find(a[id]));
-        }else if(a[id]<val){
-            presum -= a[id], pst.erase(pst.find(a[id]));
-        }else{
-            val = *sst.begin();
-            sufsum -= val;
-            sst.erase(sst.begin());
-        }
-
-        if(pst.empty()){
-            pst.insert(val), presum += val;
-            val = *sst.begin(), sufsum-=val;
-            sst.erase(sst.begin());
-        }else if(sst.empty()){
-            sst.insert(val), sufsum += val;
-            val = *pst.rbegin(), presum -= val;
-            pst.erase(prev(pst.end()));
-        }
+void update(int ind, int st, int nd, long long int val){
+    if(st>ord[val] ||  nd<ord[val]) return;
+    if(st==nd){
+        seg[ind] = val; return;
     }
 
-    for(int i=3; i<=n; i++) cout<<ans[i]<<endl;
+    int mid = (st+nd)/2;
+    update(ind+ind, st, mid, val), update(ind+ind+1, mid+1, nd, val);
+    seg[ind] = seg[ind+ind]+seg[ind+ind+1];
 }
+
+long long query(int ind, int st, int nd, int id){
+    if(nd<=id) return seg[ind];
+    if(st>id) return 0;
+
+    int mid = (st+nd)/2;
+    return query(ind+ind, st, mid, id) + query(ind+ind+1, mid+1, nd, id);
+}
+
 
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
-    int t=1; while(t--) {
-        solve();
+    
+    long long int n, sum=0; cin>>n;
+    vector<long long>vec(n);
+    
+    for(int i=1; i<=n; i++){
+        cin>>a[i];
+        sorteda[i] = a[i];
     }
+    sort(sorteda+1, sorteda+n+1);
+
+    for(int i=1; i<=n; i++) ord[sorteda[i]] = i;    
+
+    indexed_set st;
+    cout<<"0\n";
+
+    for(int i=1; i<4; i++){
+        sum+=a[i];
+        st.insert(ord[a[i]]);
+        update(1,1,n,a[i]);
+    }
+
+    auto f = [&] (int k, int sz){
+        long long fst = sorteda[*st.find_by_order(k-1)];
+
+        long long ret = fst*k - query(1,1,n,ord[fst]);
+        if(k+1<sz) {
+            long long snd = sorteda[*st.find_by_order(k+1)];
+            ret = max(ret,sum - query(1,1,n,ord[snd]) - snd*(sz-1 - (k+1)));
+        }
+
+        return ret;
+    };
+    
+    for(int i=4; i<=n; i++){
+        sum += a[i];
+        st.insert(ord[a[i]]);
+        update(1,1,n,a[i]);
+
+        int l=1,r=i-2,mid;
+        while(l+1<r){
+            mid = (l+r)/2;
+
+            if(f(mid,i) > f(mid+1,i)){
+                l = mid+1;
+            }else{
+                r = mid;
+            }
+        }
+
+        cout<< min(f(l, i),f(r,i)) %md * bigpow(i-2, md-2) % md<<endl;
+    }
+    
     return 0;
 }
